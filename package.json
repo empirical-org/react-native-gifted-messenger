@@ -33,7 +33,7 @@
     "moment": "^2.10.6",
     "react-native-button": "^1.5.0",
     "react-native-gifted-spinner": "^0.0.4",
-    "react-native-parsed-text": "0.0.12"
+    "react-native-parsed-text": "github:Blquinn/react-native-parsed-text"
   },
   "devDependencies": {
     "eslint": "^2.7.0",
