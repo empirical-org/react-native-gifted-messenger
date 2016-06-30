@@ -80,13 +80,13 @@ export default class Bubble extends React.Component {
                 onPress: this.props.handleEmailPress,
               },
               {
-                pattern: /(<(b)>[^<]*(<([^>]+)>))/ig,
+                pattern: /(<(b)>[^<]*(<([^>]+)>))/,
                 style: {
                   fontWeight: 'bold'
                 }
               },
               {
-                pattern: /(<(u)>[^<]*(<([^>]+)>))/ig,
+                pattern: /(<(u)>[^<]*(<([^>]+)>))/,
                 style: {
                   textDecorationLine: 'underline'
                 }
