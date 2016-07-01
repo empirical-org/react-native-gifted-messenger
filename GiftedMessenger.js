@@ -89,28 +89,25 @@ class GiftedMessenger extends Component {
         borderTopWidth: 1 / PixelRatio.get(),
         borderColor: '#b2b2b2',
         flexDirection: 'row',
-        paddingLeft: 10,
+        paddingLeft: 15,
         paddingRight: 10,
-
+        alignItems: 'center',
         position: 'absolute',
         bottom: 0,
         width: Dimensions.get('window').width,
       },
       textInput: {
-        //alignSelf: 'center', //not needed anymore since container view doesn't have flexDirection anymore
-        height: 30,
+        // alignSelf: 'center', //not needed anymore since container view doesn't have flexDirection anymore
+        height: 25,
         width: 100,
         backgroundColor: '#FFF',
         flex: 1,
         fontSize: 15,
 
         margin: 0,
-        marginVertical: 5,
-        padding: 5,
+        paddingVertical: 5
       },
       sendButton: {
-        marginTop: 11,
-        marginLeft: 10,
       },
       date: {
         color: '#aaaaaa',
@@ -619,6 +616,8 @@ class GiftedMessenger extends Component {
           {this.props.leftControlBar}
 
           <AutoGrowingTextInput
+            autoCapitalize={"none"}
+            autoCorrect={false}
             style={this.styles.textInput}
             placeholder={this.props.placeholder}
             placeholderTextColor={this.props.placeholderTextColor}
