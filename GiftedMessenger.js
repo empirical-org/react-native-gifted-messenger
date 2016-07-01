@@ -1,7 +1,4 @@
 import React, {
-  Component,
-} from 'react';
-import {
   Text,
   View,
   ListView,
@@ -10,6 +7,7 @@ import {
   Animated,
   Platform,
   PixelRatio,
+  Component,
 } from 'react-native';
 
 import Message from './Message';
@@ -18,6 +16,7 @@ import moment from 'moment';
 import {setLocale} from './Locale';
 import deepEqual from 'deep-equal';
 import Button from 'react-native-button';
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 class GiftedMessenger extends Component {
 
@@ -44,12 +43,16 @@ class GiftedMessenger extends Component {
     this._scrollToPreviousPosition = false;
     this._visibleRows = { s1: { } };
 
+    this.totalInputHeightDelta = 0;
     let textInputHeight = 44;
+
     if (!this.props.hideTextInput) {
       if (this.props.styles.hasOwnProperty('textInputContainer')) {
         textInputHeight = this.props.styles.textInputContainer.height || textInputHeight;
       }
     }
+
+    this.textInputHeight = textInputHeight;
 
     this.listViewMaxHeight = this.props.maxHeight - textInputHeight;
 
@@ -67,6 +70,7 @@ class GiftedMessenger extends Component {
       text: props.text,
       disabled: true,
       height: new Animated.Value(this.listViewMaxHeight),
+      inputHeight: new Animated.Value(this.textInputHeight),
       appearAnim: new Animated.Value(0),
     };
   }
@@ -81,26 +85,29 @@ class GiftedMessenger extends Component {
         flex: 1,
       },
       textInputContainer: {
-        height: 44,
+        //height: 44, //height now needs to be dynamically set via textinput's onHeightChanged event, and we'll measure the initial height rather than rely on style props
         borderTopWidth: 1 / PixelRatio.get(),
         borderColor: '#b2b2b2',
         flexDirection: 'row',
-        paddingLeft: 10,
+        paddingLeft: 15,
         paddingRight: 10,
+        alignItems: 'center',
+        position: 'absolute',
+        bottom: 0,
+        width: Dimensions.get('window').width,
       },
       textInput: {
-        alignSelf: 'center',
-        height: 30,
+        // alignSelf: 'center', //not needed anymore since container view doesn't have flexDirection anymore
+        height: 25,
         width: 100,
         backgroundColor: '#FFF',
         flex: 1,
-        padding: 0,
-        margin: 0,
         fontSize: 15,
+
+        margin: 0,
+        paddingVertical: 5
       },
       sendButton: {
-        marginTop: 11,
-        marginLeft: 10,
       },
       date: {
         color: '#aaaaaa',
@@ -144,6 +151,8 @@ class GiftedMessenger extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    Object.assign(this.styles, nextProps.styles); //helpful during development to absorb new styles (Message + Bubble also need this)
+
     if (nextProps.typingMessage !== this.props.typingMessage) {
       if (this.isLastMessageVisible()) {
         this._scrollToBottomOnNextRender = true;
@@ -173,6 +182,7 @@ class GiftedMessenger extends Component {
     if (nextProps.styles.hasOwnProperty('textInputContainer')) {
       textInputHeight = nextProps.styles.textInputContainer.height || textInputHeight;
     }
+    this.textInputHeight = textInputHeight;
 
     if (nextProps.maxHeight !== this.props.maxHeight) {
       this.listViewMaxHeight = nextProps.maxHeight;
@@ -211,13 +221,23 @@ class GiftedMessenger extends Component {
       this.onChangeText('');
       this.props.handleSend(message);
     }
+
+    this.resetTextInputHeightDelta();
   }
 
   onKeyboardWillHide() {
-    Animated.timing(this.state.height, {
-      toValue: this.listViewMaxHeight,
-      duration: 150,
-    }).start();
+    this.keyboardHeight = 0;
+
+    Animated.parallel([
+      Animated.timing(this.state.height, {
+        toValue: this.listViewMaxHeight,
+        duration: 150,
+      }).start(),
+      Animated.timing(this.state.inputHeight, {
+        toValue: this.textInputHeight + this.totalInputHeightDelta,
+        duration: 150,
+      }).start(),
+    ]);
   }
 
   onKeyboardDidHide(e) {
@@ -228,16 +248,30 @@ class GiftedMessenger extends Component {
     // TODO test in android
     if (this.props.keyboardShouldPersistTaps === false) {
       if (this.isLastMessageVisible()) {
-        this.scrollToBottom();
+        if(this.hasMoreContentThanSpaceAvailable()) {
+          let y = this._listHeight - this._footerY - this.totalInputHeightDelta;
+          this.scrollResponder.scrollTo({x: 0, y: -y}); //when there's more content than space available, move the last message close to the textinput
+        }
+        else {
+          this.scrollResponder.scrollTo({x: 0, y: 0}); //just scroll to top in case message have been pushed above the fold
+        }
       }
     }
   }
 
   onKeyboardWillShow(e) {
-    Animated.timing(this.state.height, {
-      toValue: this.listViewMaxHeight - e.endCoordinates.height,
-      duration: 200,
-    }).start();
+    this.keyboardHeight = e.endCoordinates.height;
+
+    Animated.parallel([
+      Animated.timing(this.state.height, {
+        toValue: this.listViewMaxHeight - e.endCoordinates.height - this.totalInputHeightDelta,
+        duration: 200,
+      }).start(),
+      Animated.timing(this.state.inputHeight, {
+        toValue: e.endCoordinates.height + this.textInputHeight + this.totalInputHeightDelta,
+        duration: 200,
+      }).start(),
+    ]);
   }
 
   onKeyboardDidShow(e) {
@@ -370,10 +404,18 @@ class GiftedMessenger extends Component {
   isLastMessageVisible() {
     return !!this._visibleRows.s1[this.getLastMessageUniqueId()];
   }
+  hasMoreContentThanSpaceAvailable() {
+    let spaceAvailable = this.listViewMaxHeight - this.totalKeyboardHeight();
+    return this.refs.listView.scrollProperties.contentLength > spaceAvailable;
+  }
+  totalKeyboardHeight() {
+    return this.keyboardHeight + this.totalInputHeightDelta; // + this.textInputHeight  (this may be factored in elsewhere already)
+  }
 
   scrollToBottom(animated = null) {
     if (this._listHeight && this._footerY && this._footerY > this._listHeight) {
       let scrollDistance = this._listHeight - this._footerY;
+
       if (this.props.typingMessage) {
         scrollDistance -= 44;
       }
@@ -485,6 +527,17 @@ class GiftedMessenger extends Component {
     return (
       <View>
         {this.renderDate(rowData)}
+        {this.renderMessage(rowData, diffMessage)}
+      </View>
+    );
+  }
+  renderRow(rowData = {}) {
+    let diffMessage = null;
+    diffMessage = this.getPreviousMessage(rowData);
+
+    return (
+      <View>
+        {this.renderDate(rowData)}
         <Message
           rowData={rowData}
           onErrorButtonPress={this.props.onErrorButtonPress}
@@ -505,7 +558,7 @@ class GiftedMessenger extends Component {
           styles={this.styles}
         />
       </View>
-  );
+    );
   }
 
   renderAnimatedView() {
@@ -544,7 +597,6 @@ class GiftedMessenger extends Component {
 
           {...this.props}
         />
-
       </Animated.View>
     );
   }
@@ -560,21 +612,28 @@ class GiftedMessenger extends Component {
   renderTextInput() {
     if (this.props.hideTextInput === false) {
       return (
-        <View style={this.styles.textInputContainer}>
+        <Animated.View style={[this.styles.textInputContainer, {height: this.state.inputHeight}]}>
           {this.props.leftControlBar}
-          <TextInput
+
+          <AutoGrowingTextInput
+            autoCapitalize={"none"}
+            autoCorrect={false}
             style={this.styles.textInput}
             placeholder={this.props.placeholder}
             placeholderTextColor={this.props.placeholderTextColor}
             onChangeText={this.onChangeText}
             value={this.state.text}
             autoFocus={this.props.autoFocus}
-            returnKeyType={this.props.submitOnReturn ? 'send' : 'default'}
-            onSubmitEditing={this.props.submitOnReturn ? this.onSend : () => {}}
+            returnKeyType={this.props.submitOnReturn && !this.props.multiline ? 'send' : 'default'}
+            onSubmitEditing={this.props.submitOnReturn && !this.props.multiline ? this.onSend : () => {}}
             enablesReturnKeyAutomatically={true}
-
-            blurOnSubmit={this.props.blurOnSubmit}
+            multiline={this.props.multiline === true ? true : false}
+            blurOnSubmit={!this.props.multiline && this.props.blurOnSubmit}
+            maxInputHeight={this.props.maxInputHeight}
+            {...this.props.textInputProps}
+            onHeightChanged={this.onTextInputHeightChanged.bind(this)}
           />
+
           <Button
             style={this.styles.sendButton}
             styleDisabled={this.styles.sendButtonDisabled}
@@ -583,10 +642,45 @@ class GiftedMessenger extends Component {
           >
             {this.props.sendButtonText}
           </Button>
-        </View>
+        </Animated.View>
       );
     }
     return null;
+  }
+
+  //This method does most the work related to scrolling the ListView content into view in relation to
+  //the height of the multiline "Autogrow" textinput. Some noteable events are: when it's growing, blurring, focusing and sending.
+  //The goal obviously is to mimic the iPhone text message app. One of the key aspects is that the top of the messages align to the top
+  //of the page if the height taken up by the messages is less than the height available, but if the messages take up more than the available
+  //height, the bottom of the messages should align with the top of the textinput. See `this.hasMoreContentThanSpaceAvailable()`.
+  onTextInputHeightChanged(newHeight, oldHeight, heightDelta) {
+    if(heightDelta > -10 && heightDelta < 10) return; //after typing the first character in the input, a small height increase occurs, which isn't compensating by a height decrease when it's deleted, so we disregard it
+
+    this.totalInputHeightDelta += heightDelta;
+
+    Animated.timing(this.state.inputHeight, {
+      toValue: this.totalInputHeightDelta + this.textInputHeight + this.keyboardHeight,
+      duration: 150,
+    }).start(() => {
+      if(!this.hasMoreContentThanSpaceAvailable()) return;
+
+      let y = this._listHeight - this._footerY - this.totalInputHeightDelta ;
+      this.scrollResponder.scrollTo({x: 0, y: -y});
+    });
+
+    this.props.onTextInputHeightChanged && this.props.onTextInputHeightChanged(newHeight, oldHeight, heightDelta, this.totalInputHeightDelta);
+  }
+
+  //after sending a text message, shrink the height of the textinput and reset delta
+  resetTextInputHeightDelta() {
+    if(!this.props.multiline) return;
+
+    this.totalInputHeightDelta = 0;
+
+    Animated.timing(this.state.inputHeight, {
+      toValue: this.textInputHeight + this.keyboardHeight,
+      duration: 150,
+    }).start();
   }
 
   render() {
@@ -635,6 +729,12 @@ GiftedMessenger.defaultProps = {
   submitOnReturn: false,
   text: '',
   typingMessage: '',
+  renderMessage: null,
+  textInputProps: null,
+  multiline: false,
+  maxInputHeight: 250,
+  onTextInputHeightChanged: null,
+  useInitials: false,
 };
 
 GiftedMessenger.propTypes = {
@@ -675,6 +775,12 @@ GiftedMessenger.propTypes = {
   styles: React.PropTypes.object,
   submitOnReturn: React.PropTypes.bool,
   typingMessage: React.PropTypes.string,
+  renderMessage: React.PropTypes.func,
+  textInputProps: React.PropTypes.object,
+  multiline: React.PropTypes.bool,
+  maxInputHeight: React.PropTypes.number,
+  onTextInputHeightChanged: React.PropTypes.func,
+  useInitials: React.PropTypes.bool,
 };
 
 
