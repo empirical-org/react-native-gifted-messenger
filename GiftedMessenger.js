@@ -91,7 +91,7 @@ class GiftedMessenger extends Component {
         flexDirection: 'row',
         paddingLeft: 15,
         paddingRight: 10,
-        alignItems: 'center',
+        // alignItems: 'center',
         position: 'absolute',
         bottom: 0,
         width: Dimensions.get('window').width,
@@ -108,6 +108,8 @@ class GiftedMessenger extends Component {
         paddingVertical: 5
       },
       sendButton: {
+        marginTop: 11,
+        marginLeft: 10,
       },
       date: {
         color: '#aaaaaa',
