@@ -1,4 +1,5 @@
-import React, { View, Text, StyleSheet, TouchableHighlight, Image, Component } from 'react-native';
+import React, { View, Text, StyleSheet, TouchableHighlight, Image } from 'react-native';
+import {Component} from 'react';
 import Bubble from './Bubble';
 import ErrorButton from './ErrorButton';
 
