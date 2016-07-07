@@ -43,9 +43,7 @@ class GiftedMessenger extends Component {
     this._scrollToPreviousPosition = false;
     this._visibleRows = { s1: { } };
 
-    this.totalInputHeightDelta = 0;
-    let textInputHeight = 44;
-
+    let textInputHeight = 69;
     if (!this.props.hideTextInput) {
       if (this.props.styles.hasOwnProperty('textInputContainer')) {
         textInputHeight = this.props.styles.textInputContainer.height || textInputHeight;
@@ -85,7 +83,8 @@ class GiftedMessenger extends Component {
         flex: 1,
       },
       textInputContainer: {
-        //height: 44, //height now needs to be dynamically set via textinput's onHeightChanged event, and we'll measure the initial height rather than rely on style props
+        // height: 44,
+        height: 69,
         borderTopWidth: 1 / PixelRatio.get(),
         borderColor: '#b2b2b2',
         flexDirection: 'row',
@@ -97,8 +96,9 @@ class GiftedMessenger extends Component {
         width: Dimensions.get('window').width,
       },
       textInput: {
-        // alignSelf: 'center', //not needed anymore since container view doesn't have flexDirection anymore
-        height: 25,
+        alignSelf: 'center',
+        // height: 30,
+        height: 60,
         width: 100,
         backgroundColor: '#FFF',
         flex: 1,
@@ -108,7 +108,7 @@ class GiftedMessenger extends Component {
         paddingVertical: 5
       },
       sendButton: {
-        marginTop: 11,
+        marginTop: 23,
         marginLeft: 10,
       },
       date: {
@@ -629,11 +629,12 @@ class GiftedMessenger extends Component {
             returnKeyType={this.props.submitOnReturn && !this.props.multiline ? 'send' : 'default'}
             onSubmitEditing={this.props.submitOnReturn && !this.props.multiline ? this.onSend : () => {}}
             enablesReturnKeyAutomatically={true}
-            multiline={this.props.multiline === true ? true : false}
-            blurOnSubmit={!this.props.multiline && this.props.blurOnSubmit}
-            maxInputHeight={this.props.maxInputHeight}
-            {...this.props.textInputProps}
-            onHeightChanged={this.onTextInputHeightChanged.bind(this)}
+
+            autoCapitalize="none"
+            autoCorrect={false}
+            multiline={true}
+
+            blurOnSubmit={this.props.blurOnSubmit}
           />
 
           <Button
