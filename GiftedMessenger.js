@@ -6,9 +6,10 @@ import React, {
   Dimensions,
   Animated,
   Platform,
-  PixelRatio,
-  Component,
+  PixelRatio
 } from 'react-native';
+
+import {Component} from 'react';
 
 import Message from './Message';
 import GiftedSpinner from 'react-native-gifted-spinner';
