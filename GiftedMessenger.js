@@ -1,4 +1,5 @@
-import React, {
+import React, { Component } from 'react';
+import {
   Text,
   View,
   ListView,
@@ -6,17 +7,16 @@ import React, {
   Dimensions,
   Animated,
   Platform,
-  PixelRatio,
-  Component,
+  PixelRatio
 } from 'react-native';
 
 import Message from './Message';
 import GiftedSpinner from 'react-native-gifted-spinner';
 import moment from 'moment';
-import {setLocale} from './Locale';
+import { setLocale } from './Locale';
 import deepEqual from 'deep-equal';
 import Button from 'react-native-button';
-import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
+import { AutoGrowingTextInput } from 'react-native-autogrow-textinput';
 
 class GiftedMessenger extends Component {
 
