@@ -91,6 +91,12 @@ export default class Bubble extends React.Component {
                   textDecorationLine: 'underline'
                 }
               },
+              {
+                pattern: /(<(i)>[^<]*(<([^>]+)>))/,
+                style: {
+                  fontStyle: 'italic'
+                }
+              },
             ]
           }
         >
