@@ -426,15 +426,7 @@ class GiftedMessenger extends Component {
             justifyContent: 'center',
           }}
         >
-          <Text
-            style={{
-              marginLeft: 10,
-              marginRight: 10,
-              color: '#aaaaaa',
-            }}
-          >
-            {this.props.typingMessage}
-          </Text>
+          {this.props.typingMessage}
         </View>
       );
     }
@@ -685,4 +677,3 @@ GiftedMessenger.propTypes = {
 
 
 module.exports = GiftedMessenger;
-
