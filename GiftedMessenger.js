@@ -18,6 +18,7 @@ import moment from 'moment';
 import {setLocale} from './Locale';
 import deepEqual from 'deep-equal';
 import Button from 'react-native-button';
+import {AutoGrowingTextInput} from 'react-native-autogrow-textinput';
 
 class GiftedMessenger extends Component {
 
@@ -556,22 +557,23 @@ class GiftedMessenger extends Component {
       return (
         <View style={this.styles.textInputContainer}>
           {this.props.leftControlBar}
-          <TextInput
+          <AutoGrowingTextInput
+            autoCapitalize={"none"}
+            autoCorrect={false}
             style={this.styles.textInput}
             placeholder={this.props.placeholder}
             placeholderTextColor={this.props.placeholderTextColor}
             onChangeText={this.onChangeText}
-            value={this.props.text}
+            value={this.state.text}
             autoFocus={this.props.autoFocus}
-            returnKeyType={this.props.submitOnReturn ? 'send' : 'default'}
-            onSubmitEditing={this.props.submitOnReturn ? this.onSend : () => {}}
+            returnKeyType={this.props.submitOnReturn && !this.props.multiline ? 'send' : 'default'}
+            onSubmitEditing={this.props.submitOnReturn && !this.props.multiline ? this.onSend : () => {}}
             enablesReturnKeyAutomatically={true}
-
-            autoCapitalize="none"
-            autoCorrect={false}
-            multiline={true}
-
-            blurOnSubmit={this.props.blurOnSubmit}
+            multiline={this.props.multiline === true ? true : false}
+            blurOnSubmit={!this.props.multiline && this.props.blurOnSubmit}
+            maxInputHeight={this.props.maxInputHeight}
+            {...this.props.textInputProps}
+            onHeightChanged={this.onTextInputHeightChanged.bind(this)}
           />
           <Button
             style={this.styles.sendButton}
