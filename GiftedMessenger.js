@@ -15,7 +15,7 @@ import {
 import Message from './Message';
 import GiftedSpinner from 'react-native-gifted-spinner';
 import moment from 'moment';
-import {setLocale} from './Locale';
+import { setLocale } from './Locale';
 import deepEqual from 'deep-equal';
 import Button from 'react-native-button';
 
@@ -291,7 +291,7 @@ class GiftedMessenger extends Component {
   onChangeText(text) {
     this.setState({
       text,
-      disabled: text.trim().length <= 0
+      disabled: text.trim().length <= 0,
     });
 
     this.props.onChangeText(text);
@@ -333,7 +333,7 @@ class GiftedMessenger extends Component {
     const identities = [];
     for (let i = 0; i < messages.length; i++) {
       if (typeof messages[i].uniqueId === 'undefined') {
-        console.warn('messages['+i+'].uniqueId is missing');
+        console.warn('messages[' + i + '].uniqueId is missing');
       }
       rows[messages[i].uniqueId] = Object.assign({}, messages[i]);
       identities.push(messages[i].uniqueId);
@@ -448,7 +448,7 @@ class GiftedMessenger extends Component {
     diffMessage = this.getPreviousMessage(rowData);
 
     if (this.props.renderCustomDate) {
-      return this.props.renderCustomDate(rowData, diffMessage)
+      return this.props.renderCustomDate(rowData, diffMessage);
     }
 
     if (rowData.date instanceof Date) {
@@ -544,7 +544,7 @@ class GiftedMessenger extends Component {
   }
 
   setTextInputValue(text) {
-    text = text || this.state.text
+    text = text || this.state.text;
     this.setState({
       text,
       disabled: text.trim().length <= 0,
@@ -552,7 +552,10 @@ class GiftedMessenger extends Component {
   }
 
   renderTextInput() {
-    if (this.props.hideTextInput === false) {
+    if (this.props.actionButton) {
+      return this.props.actionButton;
+    }
+    else if (this.props.hideTextInput === false) {
       return (
         <View style={this.styles.textInputContainer}>
           {this.props.leftControlBar}
@@ -566,11 +569,9 @@ class GiftedMessenger extends Component {
             returnKeyType={this.props.submitOnReturn ? 'send' : 'default'}
             onSubmitEditing={this.props.submitOnReturn ? this.onSend : () => {}}
             enablesReturnKeyAutomatically={true}
-
-            autoCapitalize="none"
-            autoCorrect={false}
+            autoCapitalize={ this.props.autoCapitalize !== undefined ? this.props.autoCapitalize : 'none' }
+            autoCorrect={ this.props.autoCorrect !== undefined ? this.props.autoCorrect : false }
             multiline={true}
-
             blurOnSubmit={this.props.blurOnSubmit}
           />
           <Button
@@ -611,7 +612,7 @@ GiftedMessenger.defaultProps = {
   hideTextInput: false,
   isLoadingEarlierMessages: false,
   keyboardDismissMode: 'interactive',
-  keyboardShouldPersistTaps: true,
+  keyboardShouldPersistTaps: 'always',
   leftControlBar: null,
   loadEarlierMessagesButton: false,
   loadEarlierMessagesButtonText: 'Load earlier messages',
