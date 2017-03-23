@@ -650,7 +650,7 @@ GiftedMessenger.propTypes = {
   hideTextInput: React.PropTypes.bool,
   isLoadingEarlierMessages: React.PropTypes.bool,
   keyboardDismissMode: React.PropTypes.string,
-  keyboardShouldPersistTaps: React.PropTypes.bool,
+  keyboardShouldPersistTaps: React.PropTypes.string,
   leftControlBar: React.PropTypes.element,
   loadEarlierMessagesButton: React.PropTypes.bool,
   loadEarlierMessagesButtonText: React.PropTypes.string,
@@ -673,7 +673,6 @@ GiftedMessenger.propTypes = {
   senderName: React.PropTypes.string,
   styles: React.PropTypes.object,
   submitOnReturn: React.PropTypes.bool,
-  typingMessage: React.PropTypes.string,
 };
 
 
