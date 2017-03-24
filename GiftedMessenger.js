@@ -573,6 +573,7 @@ class GiftedMessenger extends Component {
             autoCorrect={ this.props.autoCorrect !== undefined ? this.props.autoCorrect : false }
             multiline={true}
             blurOnSubmit={this.props.blurOnSubmit}
+            underlineColorAndroid="transparent"
           />
           <Button
             style={this.styles.sendButton}
